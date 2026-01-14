@@ -207,7 +207,7 @@ const App: React.FC = () => {
     const updatedTeam = { ...newTeams[gameState.currentTeamIndex], position: { x, y } };
     newTeams[gameState.currentTeamIndex] = updatedTeam;
     
-    const triggered = checkInteractions(x, y, newTeams);
+    checkInteractions(x, y, newTeams);
 
     setGameState(prev => ({ 
       ...prev, 
@@ -354,9 +354,7 @@ const App: React.FC = () => {
       return;
     }
 
-    // Deduct coin and move
     if (currentTeam.coins <= 0 && !currentTeam.freeBus) {
-      // Force get off if no coins
       moveBusOneStop(false);
       return;
     }
@@ -419,8 +417,6 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-sky-100 flex flex-col items-center justify-center relative font-fredoka">
-      
-      {/* HUD Layer */}
       <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none z-10">
         <div className="bg-white/90 backdrop-blur p-4 rounded-2xl shadow-lg border-2 border-emerald-500 pointer-events-auto">
           <h1 className="text-2xl font-bold text-emerald-600 flex items-center gap-2 uppercase tracking-tighter">
@@ -457,7 +453,6 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* Top Banner Notifications */}
       <div className="absolute top-0 w-full flex flex-col items-center pt-4 z-50 pointer-events-none gap-3">
         {gameState.phase === 'POWERUP_SELECT' && (
           <div className="bg-rose-500 px-10 py-4 rounded-full shadow-2xl border-4 border-white flex items-center gap-5 animate-in slide-in-from-top duration-500 pointer-events-auto ring-8 ring-rose-500/20">
@@ -476,7 +471,6 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* Game Board Container */}
       <div 
         className="board-container flex items-center justify-center cursor-move touch-none h-full w-full"
         onPointerDown={handlePointerDown}
@@ -520,7 +514,7 @@ const App: React.FC = () => {
                 }
 
                 const isRedLight = gameState.redLightPos?.x === x && gameState.redLightPos?.y === y;
-                const isPossibleMove = gameState.phase === 'MOVING' && gameState.remainingMoves > 0 && canMoveTo(x, y) && Math.abs(x - currentTeam?.position.x!) + Math.abs(y - currentTeam?.position.y!) <= gameState.remainingMoves;
+                const isPossibleMove = gameState.phase === 'MOVING' && gameState.remainingMoves > 0 && canMoveTo(x, y) && Math.abs(x - (currentTeam?.position.x || 0)) + Math.abs(y - (currentTeam?.position.y || 0)) <= gameState.remainingMoves;
 
                 return (
                   <div key={`${x}-${y}`} className={`w-[70px] h-[70px] relative flex flex-col items-center justify-between text-[8px] font-bold text-center p-1 transition-all duration-300 pointer-events-auto overflow-hidden ${bgColor} ${isRedLight ? 'bg-red-900 border-4 border-red-500' : ''} ${isPossibleMove ? 'sidewalk-flash' : ''} ${gameState.phase === 'POWERUP_SELECT' && type === TileType.CROSSWALK ? 'cursor-pointer hover:scale-110 ring-4 ring-rose-500 ring-offset-2' : ''}`}
@@ -548,7 +542,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Screen Overlays */}
       <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center">
         {gameState.phase === 'TEAM_COUNT' && (
           <div className="bg-white p-10 rounded-[40px] shadow-2xl border-8 border-emerald-400 flex flex-col items-center gap-6 pointer-events-auto animate-in zoom-in duration-300">
@@ -589,7 +582,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Minimized Controls */}
         {gameState.phase === 'MOVING' && gameState.remainingMoves > 0 && (
           <div className="fixed bottom-6 bg-white/95 backdrop-blur-md p-4 rounded-[40px] shadow-2xl border-2 border-blue-500 flex items-center gap-5 pointer-events-auto animate-in slide-in-from-bottom duration-300">
             <button onClick={() => turn('LEFT')} className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center hover:bg-blue-600 active:scale-90 transition-all shadow-md">
@@ -608,7 +600,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Bus Offer Phase */}
         {gameState.phase === 'BUS_OFFER' && (
           <div className="bg-white p-6 rounded-[40px] shadow-2xl border-4 border-blue-400 flex flex-col items-center gap-4 pointer-events-auto animate-in zoom-in duration-300 max-w-sm w-full">
             <Bus size={40} className="text-blue-500" />
@@ -628,9 +619,8 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Bus Travel Decision Phase - Sized down for board visibility */}
         {gameState.phase === 'BUS_TRAVEL' && (
-          <div className="bg-white/95 p-6 rounded-[40px] shadow-2xl border-4 border-emerald-400 flex flex-col items-center gap-4 pointer-events-auto animate-in zoom-in duration-300 max-w-xs w-full">
+          <div className="bg-white/95 p-6 rounded-[40px] shadow-2xl border-4 border-emerald-400 flex flex-col items-center gap-4 pointer-events-auto animate-in zoom-in duration-300 max-w-[240px] w-full">
             <Bus size={40} className="text-emerald-500 animate-bounce" />
             <div className="text-center">
               <h2 className="text-xl font-black text-emerald-600 uppercase">Beep Beep!</h2>
@@ -648,7 +638,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Question Modal */}
         {gameState.phase === 'QUESTION' && activeQuestion && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-6">
             <div className="bg-white p-10 rounded-[50px] shadow-2xl border-8 border-amber-400 max-w-xl w-full flex flex-col items-center gap-8 animate-in zoom-in duration-300 pointer-events-auto">
@@ -663,7 +652,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Victory Screen */}
         {gameState.phase === 'GAME_OVER' && (
           <div className="fixed inset-0 bg-white/95 z-[100] flex flex-col items-center justify-center p-8 text-center pointer-events-auto">
             <div className="text-9xl mb-6">{currentTeam?.emoji}</div>
@@ -674,7 +662,6 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* Side Tracker */}
       {gameState.phase !== 'TEAM_COUNT' && gameState.phase !== 'TEAM_CUSTOMIZATION' && currentTeam && (
         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-10 pointer-events-auto">
           <div className="bg-white/90 backdrop-blur p-6 rounded-[35px] border-4 border-indigo-400 shadow-xl w-56 animate-in slide-in-from-right duration-500">

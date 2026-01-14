@@ -1,8 +1,5 @@
 {
-  "name": "Copy of Town Talker: Direction Master",
+  "name": "Town Talker: Direction Master",
   "description": "A collaborative board game for young English learners to practice giving directions, navigating a vibrant town, and earning coins through English challenges.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
+  "requestFramePermissions": []
 }
